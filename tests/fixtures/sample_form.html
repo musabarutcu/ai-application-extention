@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <title>Acme Kampüs Elçiliği Programı 2026 - Başvuru Formu</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 32px auto; padding: 0 16px; }
+    .q { margin: 18px 0; } label, legend { display: block; font-weight: 600; margin-bottom: 4px; }
+    input[type=text], input[type=email], input[type=tel], textarea, select { width: 100%; padding: 6px; }
+    .fancy input { position: absolute; opacity: 0; }  /* özel tasarımlı radio */
+    [role=radio] { display: inline-block; padding: 4px 10px; border: 1px solid #aaa; margin-right: 6px; cursor: pointer; }
+    [role=radio][aria-checked=true] { background: #6a4cff; color: white; }
+    .qtitle { font-weight: 600; margin-bottom: 4px; }
+    .custom-select, .rs-control, .select2-container { display: flex; justify-content: space-between; position: relative;
+      padding: 10px; background: #f1f1f4; border: 1px solid #ccc; cursor: pointer; }
+    .cs-menu { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #ccc; z-index: 5; }
+    .cs-list { list-style: none; margin: 0; padding: 0; max-height: 160px; overflow: auto; }
+    .cs-item { padding: 6px 10px; } .cs-item:hover { background: #eef; }
+    .rs-input { border: 0; background: transparent; width: 40%; outline: none; }
+    .rs-menu { position: absolute; background: #fff; border: 1px solid #ccc; width: 300px; z-index: 9; }
+    .rs-menu [role=option] { padding: 6px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Acme Kampüs Elçiliği Programı</h1>
+  <p>Acme, üniversite öğrencileri için kampüs elçiliği programına başvuruları kabul ediyor.</p>
+
+  <form id="f" onsubmit="event.preventDefault(); document.getElementById('submitted').textContent='GÖNDERİLDİ';">
+    <div class="q"><label for="fn">Adınız *</label><input id="fn" name="first_name" required /></div>
+    <div class="q"><label for="ln">Soyadınız *</label><input id="ln" name="last_name" required /></div>
+    <div class="q"><label for="em">E-posta Adresiniz</label><input id="em" type="email" name="email" /></div>
+    <div class="q"><label for="ph">Telefon</label><input id="ph" type="tel" /></div>
+    <div class="q">
+      <div>Okuduğunuz Üniversite</div>
+      <input type="text" name="u1" />
+    </div>
+    <div class="q"><label for="sinif">Sınıf</label>
+      <select id="sinif"><option value="">Seçiniz</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    </div>
+    <fieldset class="q fancy">
+      <legend>Daha önce bir toplulukta görev aldınız mı?</legend>
+      <label><input type="radio" name="topluluk" value="evet" /> Evet</label>
+      <label><input type="radio" name="topluluk" value="hayir" /> Hayır</label>
+    </fieldset>
+    <div class="q" role="listitem">
+      <div role="heading">Programı nereden duydunuz?</div>
+      <div role="radiogroup">
+        <div role="radio" aria-checked="false" data-value="Instagram" tabindex="0">Instagram</div>
+        <div role="radio" aria-checked="false" data-value="Arkadaş" tabindex="0">Arkadaş</div>
+        <div role="radio" aria-checked="false" data-value="LinkedIn" tabindex="0">LinkedIn</div>
+      </div>
+    </div>
+    <!-- Özel açılır kutu 1: "İl Seçiniz" div'i, tıklayınca içinde aramalı liste açılır -->
+    <div class="q">
+      <div class="qtitle">6- Yaşadığın İl*</div>
+      <div class="custom-select" id="il-select" tabindex="0">
+        <div class="cs-value">İl Seçiniz</div><span class="chev">⌄</span>
+        <div class="cs-menu" hidden>
+          <input class="cs-search" placeholder="Ara..." />
+          <ul class="cs-list"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Özel açılır kutu 2: react-select tarzı; mousedown ile açılır, liste body'ye çizilir, sadece ilk 5 görünür -->
+    <div class="q">
+      <div class="qtitle" id="uni-label">8- Üniversiten*</div>
+      <div class="rs-control" id="uni-control">
+        <span class="rs-placeholder">Üniversite Seçiniz</span>
+        <input role="combobox" aria-labelledby="uni-label" aria-controls="uni-listbox" aria-expanded="false" class="rs-input" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Özel açılır kutu 3: gizli <select> + üstünde Select2 tarzı görünüm -->
+    <div class="q">
+      <label for="donem">Mezuniyet Dönemi</label>
+      <select id="donem" style="display:none"><option value="">Seçiniz</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option></select>
+      <span class="select2-container" id="donem-ui" tabindex="0">Dönem Seçiniz</span>
+    </div>
+
+    <div class="q"><label for="neden">Neden Acme Kampüs Elçisi olmak istiyorsunuz? (en fazla 150 kelime)</label>
+      <textarea id="neden" rows="6"></textarea>
+    </div>
+    <div class="q"><label for="cv">CV</label><input id="cv" type="file" /></div>
+    <!-- Gizli dosya alanı + "Dosya Seç" butonu (yaygın tasarım) -->
+    <div class="q">
+      <div class="qtitle">12- Son 3 ay içinde alınmış Adli Sicil Kaydı*</div>
+      <label class="upload-btn">Dosya Seç<input id="adli" type="file" accept=".pdf" style="display:none" /></label>
+      <span id="adli-name">Dosya seçilmedi</span>
+    </div>
+    <div class="q"><label><input type="checkbox" name="kvkk" /> KVKK aydınlatma metnini okudum</label></div>
+    <button type="submit">Gönder</button>
+    <p id="submitted"></p>
+  </form>
+  <script>
+    // --- Özel açılır kutu 1 ---
+    const ILLER = ["Adana", "Ankara", "Antalya", "Bursa", "İstanbul", "İzmir", "Kocaeli", "Konya"];
+    const il = document.getElementById('il-select');
+    const ilMenu = il.querySelector('.cs-menu'), ilList = il.querySelector('.cs-list'), ilSearch = il.querySelector('.cs-search');
+    const drawIl = (q = '') => {
+      ilList.replaceChildren(...ILLER.filter((x) => x.toLocaleLowerCase('tr').includes(q.toLocaleLowerCase('tr'))).map((x) => {
+        const li = document.createElement('li'); li.textContent = x; li.className = 'cs-item';
+        li.addEventListener('click', (e) => { e.stopPropagation(); il.querySelector('.cs-value').textContent = x; ilMenu.hidden = true; });
+        return li;
+      }));
+    };
+    il.addEventListener('click', (e) => { if (!ilMenu.contains(e.target)) { ilMenu.hidden = !ilMenu.hidden; drawIl(); ilSearch.value = ''; } });
+    ilSearch.addEventListener('input', () => drawIl(ilSearch.value));
+    document.addEventListener('mousedown', (e) => { if (!il.contains(e.target)) ilMenu.hidden = true; });
+
+    // --- Özel açılır kutu 2 (react-select benzeri, portal + sanal liste) ---
+    const UNIS = ["Abdullah Gül Üniversitesi", "Acıbadem Üniversitesi", "Akdeniz Üniversitesi", "Ankara Üniversitesi",
+      "Atatürk Üniversitesi", "Boğaziçi Üniversitesi", "Ege Üniversitesi", "Hacettepe Üniversitesi",
+      "İstanbul Teknik Üniversitesi", "Marmara Üniversitesi", "ODTÜ", "Yıldız Teknik Üniversitesi"];
+    const uc = document.getElementById('uni-control'), ui = uc.querySelector('.rs-input'), up = uc.querySelector('.rs-placeholder');
+    let lb = null;
+    const closeUni = () => { lb?.remove(); lb = null; ui.setAttribute('aria-expanded', 'false'); };
+    const openUni = () => {
+      closeUni();
+      lb = document.createElement('div'); lb.id = 'uni-listbox'; lb.setAttribute('role', 'listbox'); lb.className = 'rs-menu';
+      UNIS.filter((x) => x.toLocaleLowerCase('tr').includes(ui.value.toLocaleLowerCase('tr'))).slice(0, 5).forEach((x) => {
+        const o = document.createElement('div'); o.setAttribute('role', 'option'); o.textContent = x;
+        o.addEventListener('click', () => { up.textContent = x; ui.value = ''; closeUni(); });
+        lb.append(o);
+      });
+      document.body.append(lb); ui.setAttribute('aria-expanded', 'true');
+    };
+    uc.addEventListener('mousedown', (e) => { if (e.target !== ui || !lb) { e.preventDefault(); ui.focus(); lb ? closeUni() : openUni(); } });
+    ui.addEventListener('input', openUni);
+    ui.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeUni(); if (e.key === 'ArrowDown' && !lb) openUni(); });
+    document.addEventListener('mousedown', (e) => { if (lb && !uc.contains(e.target) && !lb.contains(e.target)) closeUni(); });
+
+    // --- Özel açılır kutu 3: gizli select'i dinleyen görünüm ---
+    const donem = document.getElementById('donem');
+    donem.addEventListener('change', () => { document.getElementById('donem-ui').textContent = donem.selectedOptions[0].text; });
+
+    // Dosya alanı: seçilen dosyanın adını göster (sitelerin yaptığı gibi change olayını dinler)
+    document.getElementById('adli').addEventListener('change', (e) => {
+      document.getElementById('adli-name').textContent = e.target.files[0]?.name || 'Dosya seçilmedi';
+    });
+
+    // ARIA radio davranışı (Google Forms benzeri)
+    document.querySelectorAll('[role=radio]').forEach((r) => r.addEventListener('click', () => {
+      r.parentElement.querySelectorAll('[role=radio]').forEach((x) => x.setAttribute('aria-checked', 'false'));
+      r.setAttribute('aria-checked', 'true');
+    }));
+  </script>
+</body>
+</html>

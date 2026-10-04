@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <title>TOG Burs Başvurusu - Adım Adım</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 24px; }
+    h2 { font-weight: 500; } textarea, input { width: 100%; padding: 10px; font: inherit; }
+    .nav { display: flex; justify-content: space-between; margin-top: 16px; }
+    .nav button { background: #d0021b; color: #fff; border: 0; padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <!-- Typeform / Google Forms tarzı: her adımda DOM tamamen yeniden çizilir (sayfa yenilenmez) -->
+  <div id="app"></div>
+  <script>
+    const STEPS = [
+      { q: "Adınız Soyadınız*", type: "input" },
+      { q: "Kendinizi kısaca anlatır mısınız?*", type: "textarea" },
+      { q: "TOG'dan burs desteği almaya başlarsanız sizce hayatınızda nasıl bir değişiklik olur?*", type: "textarea" },
+    ];
+    const answers = {};
+    let step = 0;
+    function draw() {
+      const s = STEPS[step];
+      const app = document.getElementById('app');
+      app.innerHTML = '';
+      const card = document.createElement('div'); card.className = 'card';
+      const h = document.createElement('h2'); h.id = 'q' + step; h.textContent = s.q;
+      const field = document.createElement(s.type);
+      field.setAttribute('aria-labelledby', h.id); field.value = answers[step] || '';
+      if (s.type === 'textarea') field.rows = 5;
+      field.addEventListener('input', () => (answers[step] = field.value));
+      const nav = document.createElement('div'); nav.className = 'nav';
+      const back = document.createElement('button'); back.textContent = '← GERİ'; back.type = 'button';
+      back.onclick = () => { if (step > 0) { step--; draw(); } };
+      const next = document.createElement('button'); next.textContent = step === STEPS.length - 1 ? 'GÖNDER' : 'İLERİ →'; next.type = 'button';
+      next.id = 'next';
+      next.onclick = () => { if (step < STEPS.length - 1) { step++; draw(); } else { app.textContent = 'GÖNDERİLDİ'; } };
+      nav.append(back, next);
+      card.append(h, field, nav);
+      app.append(card);
+    }
+    draw();
+  </script>
+</body>
+</html>

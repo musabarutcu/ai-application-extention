@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yan panel önizleme</title>
+  <link rel="stylesheet" href="/extension/sidepanel/sidepanel.css" />
+</head>
+<body>
+<script>
+// Üst sayfa: paneli gerçek yan panel boyutunda (380px) bir çerçevede göster.
+if (window.top === window && !location.search.includes("inner")) {
+  document.write(`<style>html,body{margin:0;background:#888;height:100%}</style>
+    <iframe src="?inner=1" style="width:380px;height:100vh;border:0;display:block"></iframe>`);
+  throw new Error("çerçeve modu");  // aşağıdaki kurulum yalnızca iç çerçevede çalışsın
+}
+// Yan paneli Chrome dışında görmek için: chrome.* API'leri ve backend cevapları taklit edilir.
+// Çalıştırma: proje kökünde `python -m http.server 8800` → http://127.0.0.1:8800/tests/fixtures/sidepanel_preview.html
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const FIELDS = [
+  { id: "f0", label: "Adınız", type: "text", required: true },
+  { id: "f1", label: "Soyadınız", type: "text", required: true },
+  { id: "f2", label: "E-posta Adresiniz", type: "email" },
+  { id: "f4", label: "Okuduğunuz Üniversite", type: "text" },
+  { id: "f5", label: "Sınıf", type: "select", options: ["1", "2", "3", "4"] },
+  { id: "f11", label: "GitHub profiliniz", type: "url" },
+  { id: "f6", label: "Daha önce bir toplulukta görev aldınız mı?", type: "radio", options: ["Evet", "Hayır"] },
+  { id: "f7", label: "Neden Acme Kampüs Elçisi olmak istiyorsunuz? (en fazla 150 kelime)", type: "textarea" },
+  { id: "f9", label: "Programı nereden duydunuz?", type: "radio", options: ["Instagram", "Arkadaş", "LinkedIn"] },
+  { id: "f8", label: "KVKK aydınlatma metnini okudum", type: "checkbox", options: ["KVKK aydınlatma metnini okudum"] },
+  { id: "f12", label: "12- Son 3 ay içinde alınmış Adli Sicil Kaydı*", type: "file", accept: ".pdf" },
+  { id: "f13", label: "Öğrenci Belgesi", type: "file" },
+  { id: "f14", label: "Proje sunumunuz (varsa)", type: "file" },
+];
+const DOCS = [
+  { path: "Belgeler/Adli Sicil Kaydı.pdf", filename: "Adli Sicil Kaydı.pdf", title: "Adli Sicil Kaydı", type: "adli_sicil", type_name: "Adli sicil kaydı", age_days: 12, size: 184320, warning: null },
+  { path: "Belgeler/Öğrenci Belgesi.pdf", filename: "Öğrenci Belgesi.pdf", title: "Öğrenci Belgesi", type: "ogrenci_belgesi", type_name: "Öğrenci belgesi", age_days: 140, size: 96256, warning: "140 gün önce alınmış; bu belge genelde son 60 gün içinde istenir. Güncelini almayı düşün." },
+  { path: "Belgeler/CV - Musa Barutcu.pdf", filename: "CV - Musa Barutcu.pdf", title: "CV - Musa Barutcu", type: "cv", type_name: "CV / özgeçmiş", age_days: 30, size: 251904, warning: null },
+];
+const ANSWER = "Marmara Üniversitesi Bilgisayar Mühendisliği öğrencisi olarak teknoloji ve girişimcilik ekosisteminde aktif rol alıyorum. T3 Vakfı'nda üç takıma proje mentörlüğü yapıyor, daha önce GDG Antalya ve Genç Zihin Derneği'nde ekip üyesi olarak çalıştım. Acme'nin fırsatlarını kampüsteki arkadaşlarıma taşımak ve birlikte üreten bir topluluk kurmak istiyorum.";
+const ROUTES = {
+  "/health": () => ({ status: "ok", llm: "gemini", vault: true, modules: ["application"] }),
+  "/pair": () => ({ token: "preview" }),
+  "/profile": () => ({ profile: Object.fromEntries(Array.from({ length: 31 }, (_, i) => ["k" + i, "v"])) }),
+  "/modules/application/analyze": async () => {
+    await sleep(900);
+    const s = (id, kind, value = "", extra = {}) => ({ id, kind, value, profile_key: null, source: "rule", ...extra });
+    return {
+      llm_used: true, warnings: [], documents: DOCS,
+      context: { kurum: "Acme", pozisyon: "Kampüs Elçiliği Programı 2026", tip: "elçilik" },
+      suggestions: (window.__fields ? window.__fields.map((f) => s(f.id, f.type === "textarea" ? "answer" : "skip")) : null) || [
+        s("f0", "profile", "Musa", { profile_key: "ad" }), s("f1", "profile", "Barutcu", { profile_key: "soyad" }),
+        s("f2", "profile", "msabarutcu@gmail.com", { profile_key: "eposta" }),
+        s("f4", "profile", "Marmara Üniversitesi", { profile_key: "universite" }),
+        s("f5", "profile", "2", { profile_key: "sinif" }), s("f11", "profile", "", { profile_key: "github" }),
+        s("f12", "document", DOCS[0].path, { document: DOCS[0] }), s("f13", "document", DOCS[1].path, { document: DOCS[1] }),
+        s("f14", "skip"),
+        s("f6", "answer"), s("f7", "answer", "", { max_words: 150 }), s("f9", "answer"), s("f8", "skip"),
+      ],
+    };
+  },
+  "/modules/application/answer": async (body) => {
+    await sleep(body.options?.length ? 700 : 2200);
+    if (body.options?.length) return { answer: body.question.includes("topluluk") ? "Evet" : "", category: "diger", used_answers: [] };
+    return { answer: ANSWER, category: "motivasyon", used_answers: ["YZ50 - Seni yapay zeka araştırmasına çeken şey ne", "TOG - Burs hayatınızı nasıl değiştirir"] };
+  },
+  "/modules/application/applications": () => ({ application_note: "2026-10-04 Acme - Kampüs Elçiliği", saved_answers: [] }),
+};
+const realFetch = window.fetch.bind(window);
+window.__api = [];  // panelin backend'e yaptığı çağrılar (test için)
+ROUTES["/modules/application/learn"] = (body) => ({ learned: body.items.length });
+ROUTES["/modules/application/memory"] = (body) => ({ saved_answers: body.items.map((i) => i.question) });
+window.fetch = async (url, opts = {}) => {
+  const path = new URL(url, location.href).pathname;
+  if (!String(url).startsWith("http://127.0.0.1:8765")) return realFetch(url, opts);
+  const handler = ROUTES[path];
+  const body = opts.body ? JSON.parse(opts.body) : null;
+  window.__api.push({ path, body });
+  const data = handler ? await handler(body) : { detail: "yok" };
+  return new Response(JSON.stringify(data), { status: handler ? 200 : 404, headers: { "Content-Type": "application/json" } });
+};
+const store = {};
+window.chrome = {
+  storage: { local: { get: async (keys) => Object.fromEntries(keys.map((k) => [k, store[k]])), set: async (o) => Object.assign(store, o) } },
+  tabs: {
+    query: async () => [{ id: 1, url: "https://ornek.com/basvuru" }],
+    get: async () => ({ id: 1, url: "https://ornek.com/basvuru" }),
+    onUpdated: { addListener: () => {} },
+  },
+  // içerik betiğinden gelen mesajları test etmek için: window.__send({type: "ba:changed"})
+  runtime: { onMessage: { addListener: (fn) => (window.__send = (m) => fn(m, { tab: { id: 1 } })) } },
+  scripting: {
+    executeScript: async ({ func, args }) => {
+      if (!func) return [];
+      const code = String(func);
+      if (code.includes(".read")) return [{ result: window.__pageValues || {} }];  // sayfadaki son haller
+      if (code.includes("watch") || code.includes("setInline")) return [{ result: null }];
+      if (code.includes("extract")) return [{ result: { isTop: true, url: "https://ornek.com/basvuru", title: "Acme Kampüs Elçiliği", page_text: "", fields: window.__fields || FIELDS } }];
+      await sleep(400);
+      return [{ result: args[0].map((x) => ({ id: x.id, ok: true })) }];
+    },
+  },
+};
+(async () => {
+  const html = await (await realFetch("/extension/sidepanel/sidepanel.html")).text();
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("script").forEach((s) => s.remove());
+  document.body.innerHTML = doc.body.innerHTML;
+  const script = document.createElement("script");
+  script.src = "/extension/sidepanel/sidepanel.js";
+  document.body.append(script);
+})();
+</script>
+</body>
+</html>
