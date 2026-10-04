@@ -1,0 +1,13 @@
+# Kişisel veriler ve gizli anahtarlar
+.env
+vault/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# IDE / AI asistan
+.claude/
+.agents/
