@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Başvuru Asistanı",
+  "version": "0.1.0",
+  "description": "Başvuru formlarını Obsidian'daki profilinle doldurur, açık uçlu sorulara taslak yazar.",
+  "permissions": ["sidePanel", "scripting", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "side_panel": { "default_path": "sidepanel/sidepanel.html" },
+  "action": { "default_title": "Başvuru Asistanı" }
+}

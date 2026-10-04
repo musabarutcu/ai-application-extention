@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Başvuru Asistanı</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+  </div>
+
+  <header class="bar glass">
+    <div class="bar-title">
+      <h1>Başvuru Asistanı</h1>
+      <span id="conn" class="conn wait"><i></i><span id="conn-text">Bağlanıyor…</span></span>
+    </div>
+    <button id="settings-toggle" class="icon-btn" aria-label="Ayarlar" title="Ayarlar">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <section id="settings" class="glass card sheet hidden" aria-label="Ayarlar">
+    <h2>Bağlantı</h2>
+    <p class="secondary small">Eklenti backend'e otomatik bağlanır. Bu ayarlara normalde ihtiyacın olmaz.</p>
+    <label class="field">Backend adresi
+      <input id="base-url" type="url" placeholder="http://127.0.0.1:8765" />
+    </label>
+    <label class="field">API token
+      <input id="api-token" type="password" placeholder="Otomatik alınır" />
+    </label>
+    <div class="row-buttons">
+      <button id="settings-pair" class="btn tinted">Otomatik eşleş</button>
+      <button id="settings-save" class="btn primary">Kaydet</button>
+    </div>
+    <p id="settings-msg" class="secondary small"></p>
+  </section>
+
+  <main>
+    <section id="hero" class="glass card hero">
+      <h2>Formu hazırla</h2>
+      <p class="secondary">Açık sayfadaki başvuru formunu tarar, kişisel bilgilerini doldurur ve sorulara senin üslubunla taslak yazar.</p>
+      <button id="scan" class="btn primary large">Formu tara</button>
+    </section>
+
+    <section id="context" class="glass card context hidden">
+      <input id="ctx-kurum" class="title-input" placeholder="Kurum" aria-label="Kurum" />
+      <input id="ctx-pozisyon" class="subtitle-input" placeholder="Pozisyon / program" aria-label="Pozisyon" />
+      <div class="pills">
+        <select id="ctx-tip" class="pill" aria-label="Başvuru türü">
+          <option value="">Tür</option>
+          <option>iş</option><option>staj</option><option>burs</option><option>elçilik</option>
+          <option>yarışma</option><option>eğitim</option><option>diğer</option>
+        </select>
+        <select id="ctx-durum" class="pill" aria-label="Durum">
+          <option>gönderildi</option><option>taslak</option>
+        </select>
+        <button id="rescan" class="pill pill-btn">↻ Yeniden tara</button>
+      </div>
+    </section>
+
+    <div id="groups"></div>
+  </main>
+
+  <div id="toast" class="toast glass hidden" role="status" aria-live="polite"></div>
+
+  <footer id="dock" class="dock glass hidden">
+    <button id="save" class="btn tinted">Kaydet</button>
+    <button id="fill" class="btn primary">Doldur</button>
+  </footer>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
